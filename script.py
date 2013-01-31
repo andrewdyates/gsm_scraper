@@ -14,7 +14,7 @@ def scrape(gse=None, outdir=""):
   assert gse
   G = GSE(gse, populate=False)
   print "Found %d GSMs." % len(G.samples.keys())
-  fpath = "%s.gsms.txt"
+  fpath = "%s.gsms.txt" % gse
   if outdir:
     fpath = os.path.join(outdir, fpath)
 
@@ -22,7 +22,7 @@ def scrape(gse=None, outdir=""):
   GSMs = {}
   probes = set()
   for i, gsm in enumerate(G.samples.keys()):
-    print "#%d %s downloading..." % (i, gsm)
+    print "#%d %s downloading..." % (i+1, gsm)
     S = GSM_Lite(urllib2.urlopen(URL_PTN%gsm))
     probes |= set(S.rows.keys())
     assert S.id == gsm
@@ -40,7 +40,7 @@ def scrape(gse=None, outdir=""):
   for p in probes:
     row = [p]
     for gsm in gsm_list:
-      row += GSMs[gsm][p]
+      row += GSMs[gsm].rows[p]
     print >>fp, "\t".join(row)
   
   

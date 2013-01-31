@@ -1,3 +1,9 @@
+#!/usr/bin/python
+"""
+Download data from all GSMs associated with directly associated with a GEO GSE.
+
+$ python script.py gse=GSE15222 outdir=~/Desktop
+"""
 from geo_api import *
 from geo_api.gsm_single import *
 import sys

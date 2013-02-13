@@ -6,11 +6,12 @@ $ python script.py gse=GSE15222 outdir=~/Desktop
 """
 from geo_api import *
 from geo_api.gsm_single import *
+from geo_api.download import *
 import sys
 import urllib2
 import os
 
-def scrape(gse=None, gpl=None, outdir=""):
+def scrape(gse=None, gpl=None, outdir="", use_downloader=True):
   assert gse
   G = GSE(gse, populate=False)
   if G.type == "SUPER" and gpl is None:
@@ -44,10 +45,14 @@ def scrape(gse=None, gpl=None, outdir=""):
   # Fetch all studies, load into memory
   GSMs = {}
   probes = set()
-  
+
   for i, gsm in enumerate(G.samples.keys()):
     print "#%d %s downloading..." % (i+1, gsm)
-    S = GSM_Lite(urllib2.urlopen(URL_PTN%gsm))
+    if use_downloader:
+      h = Download(URL_PTN%gsm)
+      S = GSM_Lite(h.read())
+    else:
+      S = GSM_Lite(urllib2.urlopen(URL_PTN%gsm))
     # Only download samples from the requested platform
     if gpl:
       if gpl != S.attr['platform_id'][0]:

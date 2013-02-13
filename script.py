@@ -10,10 +10,33 @@ import sys
 import urllib2
 import os
 
-def scrape(gse=None, outdir=""):
+def scrape(gse=None, gpl=None, outdir=""):
   assert gse
   G = GSE(gse, populate=False)
-  print "Found %d GSMs." % len(G.samples.keys())
+  if G.type == "SUPER" and gpl is None:
+    print "%s is a super study containing multiple studies/platforms. Specify one GPL platform from:" % gse
+    print ", ".join([GG.platform.id for GG in G.substudies.values()])
+    print "exiting..."
+    sys.exit(1)
+  if G.type != "SUPER" and gpl:
+    if gpl != G.platform.id:
+      print "WARNING: given GPL %s != actual GPL %s" % (gpl, G.platform.id)
+  if G.type == "SUPER" and gpl:
+    found = False
+    for ggsm, GG in G.substudies.items():
+      if GG.platform.id == gpl:
+        print "Chose %s substudy / platform." % ggsm
+        G = GG
+        found = True
+        break
+    if not found:
+      print "ERROR: could not find %s in platforms included under this super study %s. Specify one GPL platform from:" % (gpl, gse)
+      print ", ".join([GG.platform.id for GG in G.substudies.values()])
+      print "exiting..."
+      sys.exit(1)
+
+  #Sample_platform_id
+  print "Found %d GSMs." % len(G.samples)
   fpath = "%s.gsms.txt" % gse
   if outdir:
     fpath = os.path.join(outdir, fpath)
@@ -21,13 +44,20 @@ def scrape(gse=None, outdir=""):
   # Fetch all studies, load into memory
   GSMs = {}
   probes = set()
+  
   for i, gsm in enumerate(G.samples.keys()):
     print "#%d %s downloading..." % (i+1, gsm)
     S = GSM_Lite(urllib2.urlopen(URL_PTN%gsm))
+    # Only download samples from the requested platform
+    if gpl:
+      if gpl != S.attr['platform_id'][0]:
+        print "%s is platform %s != %s. Skipping..." % (gse, S.attr['platform_id'][0], gpl)
+        continue
     probes |= set(S.rows.keys())
     assert S.id == gsm
     GSMs[gsm] = S
-    
+
+  print "Downloaded %d of %d GSMs." % (len(GSMs), len(G.samples))
   # Print to text file.
   print "Writing combined table to %s" % fpath
   fp = open(fpath, "w")

@@ -50,7 +50,9 @@ def scrape(gse=None, gpl=None, outdir="", use_downloader=True):
     print "#%d %s downloading..." % (i+1, gsm)
     if use_downloader:
       h = Download(URL_PTN%gsm)
-      S = GSM_Lite(h.read())
+      fp = h.read()
+      S = GSM_Lite(fp)
+      fp.close()
     else:
       S = GSM_Lite(urllib2.urlopen(URL_PTN%gsm))
     # Only download samples from the requested platform

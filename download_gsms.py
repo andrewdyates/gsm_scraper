@@ -1,13 +1,14 @@
 #!/usr/bin/python
 """Download GSM samples from a list of GSM IDS from the GEO website."""
+import errno
+import urllib2
+import os
+
 
 # insert GSM ID as first string.
 URL_PTN = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=%s&targ=self&form=text&view=full"
 ID_FILE = "gpl8490_gsm_ids.txt"
 OUTDIR = "gpl8490_gsm"
-
-import urllib2
-import os
 
 def make_dir(outdir):
   try:

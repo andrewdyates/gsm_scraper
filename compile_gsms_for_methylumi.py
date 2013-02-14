@@ -1,4 +1,5 @@
 #!/usr/bin/python
+## FIX THIS SCRIPT
 import os
 import re
 import sys
@@ -10,18 +11,20 @@ RX_TITLE = re.compile("!Sample_title = (.+?)-CpG")
 BEGIN_TABLE = "!sample_table_begin"
 END_TABLE = "!sample_table_end"
 
-def main(fname_out="gse15745_gpl8490_methylumi2.tab"):
+def main(indir=DIR, outdir=None, fname_out="gse15745_gpl8490_methylumi2.tab"):
   n_read = 0
   n_rows = None
   row_ids = None
   col_ids = None
+  if outdir is None:
+    outdir = dir
 
   arrays = {}
-  for fname in os.listdir(DIR):
+  for fname in os.listdir(indir):
     m = RX_FNAME.match(fname)
     if not m: continue
     n_read += 1
-    fp = open(os.path.join(DIR, fname))
+    fp = open(os.path.join(indir, fname))
     title = None
     for line in fp:
       line = line.rstrip('\r\n')
@@ -44,7 +47,7 @@ def main(fname_out="gse15745_gpl8490_methylumi2.tab"):
       for i,s in enumerate(row_ids):
         assert s == M[i][0], "%s @ line %d: %s != %s" % (fname, i+1, s, M[i][0])
     if col_ids is None:
-      col_ids = M.dtype.names
+      col_ids = list(M.dtype.names)
       for i in xrange(len(col_ids)):
         s = col_ids[i]
         if s == "Detection_Pval":
